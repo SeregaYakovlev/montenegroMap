@@ -24,7 +24,7 @@ class Map {
 
     setAttribution() {
         L.control.attribution({
-            prefix: "© Участники <a href='https://www.openstreetmap.org'>OpenStreetMap</a>"
+            prefix: "© <a href='https://www.openstreetmap.org'>OpenStreetMap</a>"
         }).addTo(this.map);
     }
 

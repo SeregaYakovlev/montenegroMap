@@ -37,10 +37,12 @@ body[theme="dark"] h1 {
 }
 
 .mapContainer {
+    border-radius: 8px;
     position: relative;
     width: 90%; /* Уменьшить ширину карты */
     height: 500px;
     margin: 20px auto; /* Центрировать карту и добавить отступы */
+    overflow: hidden;
 }
 
 .map {
@@ -53,7 +55,7 @@ body[theme="light"] .mapContainer {
 }
 
 body[theme="dark"] .mapContainer {
-    border: 2px solid #3d3d3d;
+    border: 2px solid #595959;
 }
 
 body[theme="dark"] .map {
