@@ -1,0 +1,38 @@
+.switcher-control {
+    cursor: pointer; /* Добавлено свойство cursor */
+    position: absolute;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+body[theme="light"] .switcher-control {
+    background: white;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+body[theme="dark"] .switcher-control {
+    background: #3d3d3d;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.6);
+}
+
+.switcher-control select {
+    border-radius: 5px;;
+    cursor: pointer; /* Добавлено свойство cursor */
+    border: none;
+    font-size: 14px;
+    text-align: center; /* Центрирование текста */
+    width: 100%; /* Make the select element take the full width */
+    height: 100%; /* Make the select element take the full height */
+    padding: 5px; /* Add padding for better click area */
+    box-sizing: border-box; /* Ensure padding is included in the element's total width and height */
+}
+
+body[theme="light"] .switcher-control select {
+    background: white;
+    color: black;
+}
+
+body[theme="dark"] .switcher-control select {
+    background: #3d3d3d;
+    color: white;
+}
