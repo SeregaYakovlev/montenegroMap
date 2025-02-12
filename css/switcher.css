@@ -2,21 +2,22 @@
     cursor: pointer; /* Добавлено свойство cursor */
     position: absolute;
     border-radius: 5px;
-    z-index: 1000;
 }
 
 body[theme="light"] .switcher-control {
     background: white;
+    border: 2px solid grey;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
 
 body[theme="dark"] .switcher-control {
     background: #3d3d3d;
+    border: 2px solid grey;
     box-shadow: 0 0 5px rgba(255, 255, 255, 0.6);
 }
 
 .switcher-control select {
-    border-radius: 5px;;
+    border-radius: 5px;
     cursor: pointer; /* Добавлено свойство cursor */
     border: none;
     font-size: 14px;

@@ -1,31 +1,46 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Карта Черногории на русском языке</title>
-    <link rel="stylesheet" href="css/page.css">
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.contextMenu.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="stylesheet" href="css/page.css">
     <link rel="stylesheet" href="css/switcher.css">
     <link rel="stylesheet" href="css/zoom-controls.css">
+    <link rel="stylesheet" href="css/map.css">
 </head>
+
 <body theme="light">
-    <h1>Карта Черногории на русском языке</h1>
+    <div id="siteHeader">Карта Черногории на русском языке</div>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Подключаем jQuery и jQuery contextMenu -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.contextMenu.min.js"></script>
+
+    <script src="js/page.js"></script>
     <script src="js/map.js"></script>
     <script>
+        let page = new Page();
+
         let mapContainer = document.createElement("div");
         mapContainer.classList.add("mapContainer");
         document.body.appendChild(mapContainer);
 
-        let map = new Map(mapContainer);
+        let map = new Map(page, mapContainer);
         map.initMap();
         map.setAttribution();
         map.setBounds();
         map.addLanguageControl();
         map.addCustomZoomControl();
-        map.initTileLayer();
         map.addThemeControl();
+        map.addContextMenu();
     </script>
 </body>
+
 </html>
