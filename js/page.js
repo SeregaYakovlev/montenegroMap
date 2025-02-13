@@ -3,6 +3,15 @@ class Page {
         this._applySavedTheme();
     }
 
+    isPC() {
+        return window.innerWidth > 768;
+    }
+    
+    isMobile() {
+        return window.innerWidth <= 768;
+    }
+    
+
     setDarkTheme(){
         document.body.setAttribute("theme", "dark");
         this._saveTheme("dark");

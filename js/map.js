@@ -68,133 +68,213 @@ class Map {
         }
     }*/
 
-    getThatSiteLink() {
-        let longUrl = window.location.origin + "?lat=" + this.map.getCenter().lat + "&lng=" + this.map.getCenter().lng + "&z=" + this.map.getZoom();
-        return longUrl;
+    getThatSiteLink(lat, lon) {
+        let url = window.location.origin + "?lat=" + lat + "&lng=" + lon + "&z=13";
+        return url;
     }
-
-    getOrganicMapsLink(lat, lon) {
-        return `https://organicmaps.app/map?lat=${lat}&lon=${lon}&zoom=15`;
-    }
-
 
     getOsmLink(lat, lon) {
-        return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=15/${lat}/${lon}`;
+        return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=13/${lat}/${lon}`;
     }
 
     getYandexLink(lat, lon) {
-        return `https://yandex.ru/maps/?ll=${lon}%2C${lat}&mode=whatshere&whatshere%5Bpoint%5D=${lon}%2C${lat}&whatshere%5Bzoom%5D=15&z=15`;
+        return `https://yandex.ru/maps/?ll=${lon}%2C${lat}&mode=whatshere&whatshere%5Bpoint%5D=${lon}%2C${lat}&whatshere%5Bzoom%5D=15&z=13`;
     }
 
     getGoogleLink(lat, lon) {
-        return `https://www.google.com/maps/place/${lat},${lon}/@${lat},${lon},15z`;
+        return `https://www.google.com/maps/place/${lat},${lon}/@${lat},${lon},13z`;
     }
+
+    async copyToBufferAndMessage(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            this.page.bubble("Скопировано!");
+        } catch (error) {
+            alert("Не удалось скопировать в буфер обмена: " + error.message);
+        }
+    }
+
+    async readBuffer() {
+        try {
+            // Читаем буфер обмена
+            const text = await navigator.clipboard.readText();
+            return text;
+        } catch (e) {
+            alert("Ошибка доступа к буферу обмена");
+            throw e;
+        }
+    }
+
+    extractCoordinates(text) {
+        try {
+
+            let match;
+
+            // Проверка на наличие координат через запятую
+            match = text.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
+            if (match) {
+                const lat = parseFloat(match[1]);
+                const lng = parseFloat(match[2]);
+                // Проверяем, что координаты - это числа
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    return { lat, lng };
+                }
+            }
+
+            // Проверка на Google Maps
+            if (text.includes("google")) {
+                match = text.match(/(?:.*@)?(-?\d+\.\d+),(-?\d+\.\d+)/);
+                if (match) {
+                    const lat = parseFloat(match[1]);
+                    const lng = parseFloat(match[2]);
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        return { lat, lng };
+                    }
+                }
+            }
+
+            // Проверка на Яндекс.Карты
+            if (text.includes("yandex")) {
+                match = text.match(/.*[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+                if (match) {
+                    const lat = parseFloat(match[2]);
+                    const lng = parseFloat(match[1]);
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        return { lat, lng };
+                    }
+                }
+            }
+
+            // Проверка на OpenStreetMap
+            if (text.includes("openstreetmap")) {
+                match = text.match(/.*[?&]mlat=(-?\d+\.\d+).*mlon=(-?\d+\.\d+)/);
+                if (match) {
+                    const lat = parseFloat(match[1]);
+                    const lng = parseFloat(match[2]);
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        return { lat, lng };
+                    }
+                }
+            }
+        } catch (e) {
+            alert(`Не удалось определить координаты из буфера: ${text}`);
+            throw e;
+        }
+    }
+
+
 
     addContextMenu() {
         let latlng = { lat: 0, lng: 0 };
 
-        // Создаем контекстное меню
-        let menu = new ContextMenu([
-            {
-                label: 'Скопировать координаты',
-                icon: 'bx bx-current-location',
-                action: () => {
-                    this.copyCoords(latlng);
-                    this.page.bubble('Координаты скопированы');
-                }
-            },
-            {
-                label: 'Открыть в другой карте...',
-                icon: 'bx bx-window-open',
-                submenu: [
-                    {
-                        label: 'Google',
-                        icon: "bx bxl-google",
-                        action: () => {
-                            window.open(this.getGoogleLink(latlng.lat, latlng.lng));
-                        }
-                    },
-                    {
-                        label: "Organic Maps",
-                        icon: 'bx bx-globe',
-                        action: () => {
-                            window.open(this.getOrganicMapsLink(latlng.lat, latlng.lng));
-                        }
-                    },
-                    {
-                        label: 'OpenStreetMap',
-                        icon: 'bx bx-globe',
-                        action: () => {
-                            console.log(`b: ${latlng.lat}, ${latlng.lng}`);
-                            window.open(this.getOsmLink(latlng.lat, latlng.lng));
-                        }
-                    },
-                    {
-                        label: 'Яндекс',
-                        icon: 'bx bxs-map-alt',
-                        action: () => {
-                            window.open(this.getYandexLink(latlng.lat, latlng.lng));
-                        }
-                    }
-                ]
-            },
-            {
-                label: 'Поделиться ссылкой на...',
-                icon: 'bx bxs-share',
-                submenu: [
-                    {
-                        label: 'Google',
-                        icon: "bx bxl-google",
-                        action: () => {
-                            navigator.clipboard.writeText(this.getGoogleLink(latlng.lat, latlng.lng));
-                            this.page.bubble('Ссылка скопирована');
-                        }
-                    },
-                    {
-                        label: "Organic Maps",
-                        icon: 'bx bx-globe',
-                        action: () => {
-                            window.open(this.getOrganicMapsLink(latlng.lat, latlng.lng));
-                        }
-                    },
-                    {
-                        label: 'OpenStreetMap',
-                        icon: 'bx bx-globe',
-                        action: () => {
-                            navigator.clipboard.writeText(this.getOsmLink(latlng.lat, latlng.lng));
-                            this.page.bubble('Ссылка скопирована');
-                        }
-                    },
-                    {
-                        label: 'Яндекс',
-                        icon: 'bx bxs-map-alt',
-                        action: () => {
-                            navigator.clipboard.writeText(this.getYandexLink(latlng.lat, latlng.lng));
-                            this.page.bubble('Ссылка скопирована');
-                        }
-                    }
-                ]
-            }
-        ], this.mapContainer);
+        let rootMenu = new Menu(this.page, this.mapContainer);
+        let anotherMapsMenu = new Menu(this.page, this.mapContainer);
+        let linkSharingMenu = new Menu(this.page, this.mapContainer);
+
+
+        let parseCoords = rootMenu.getNewItem();
+        parseCoords.setIcon("bx bx-current-location");
+        parseCoords.setLabel("Добавить метку из буфера");
+        parseCoords.setAction(async () => {
+            // Читаем буфер обмена
+            const text = await this.readBuffer();
+
+            // Парсим координаты
+            const coords = this.extractCoordinates(text);
+
+            // Добавляем метку на карту
+            L.marker([coords.lat, coords.lng]).addTo(this.map);
+
+            // Центрируем карту на метке
+            this.map.setView([coords.lat, coords.lng], 13);
+        })
+
+        let coordsCopy = rootMenu.getNewItem();
+        coordsCopy.setIcon('bx bx-current-location');
+        coordsCopy.setLabel('Скопировать координаты');
+        coordsCopy.setAction(() => {
+            // Здесь ты можешь вызвать функцию копирования
+            let coords = `${latlng.lat}, ${latlng.lng}`;
+            this.copyToBufferAndMessage(coords);
+        });
+
+
+        let openInAnotherMap = rootMenu.getNewItem();
+        openInAnotherMap.setIcon('bx bx-window-open');
+        openInAnotherMap.setLabel('Открыть в другом месте...');
+        openInAnotherMap.setSubmenu(anotherMapsMenu);
+
+        let shareLink = rootMenu.getNewItem();
+        shareLink.setIcon("bx bxl-google");
+        shareLink.setLabel("Поделиться ссылкой...");
+        shareLink.setSubmenu(linkSharingMenu);
+
+        {
+            let googleItem = anotherMapsMenu.getNewItem();
+            googleItem.setIcon("bx bxl-google");
+            googleItem.setLabel("Google");
+            googleItem.setAction(() => {
+                window.open(this.getGoogleLink(latlng.lat, latlng.lng));
+            });
+
+            let osmItem = anotherMapsMenu.getNewItem();
+            osmItem.setIcon('bx bx-globe');
+            osmItem.setLabel("OpenStreetMap");
+            osmItem.setAction(() => {
+                window.open(this.getOsmLink(latlng.lat, latlng.lng));
+            });
+
+            let yandexItem = anotherMapsMenu.getNewItem();
+            yandexItem.setIcon('bx bxs-map-alt');
+            yandexItem.setLabel("Yandex");
+            yandexItem.setAction(() => {
+                window.open(this.getYandexLink(latlng.lat, latlng.lng));
+            });
+        }
+
+        {
+
+            let thatSiteItem = linkSharingMenu.getNewItem();
+            thatSiteItem.setIcon("bx bxl-google");
+            thatSiteItem.setLabel("Этот сайт");
+            thatSiteItem.setAction(() => {
+                this.copyToBufferAndMessage(this.getThatSiteLink(latlng.lat, latlng.lng));
+            });
+
+            let googleItem = linkSharingMenu.getNewItem();
+            googleItem.setIcon("bx bxl-google");
+            googleItem.setLabel("Google");
+            googleItem.setAction(() => {
+                this.copyToBufferAndMessage(this.getGoogleLink(latlng.lat, latlng.lng));
+            });
+
+            let osmItem = linkSharingMenu.getNewItem();
+            osmItem.setIcon('bx bx-globe');
+            osmItem.setLabel("OpenStreetMap");
+            osmItem.setAction(() => {
+                this.copyToBufferAndMessage(this.getOsmLink(latlng.lat, latlng.lng));
+            });
+
+            let yandexItem = linkSharingMenu.getNewItem();
+            yandexItem.setIcon('bx bxs-map-alt');
+            yandexItem.setLabel("Yandex");
+            yandexItem.setAction(() => {
+                this.copyToBufferAndMessage(this.getYandexLink(latlng.lat, latlng.lng));
+            });
+        }
 
         this.map.on('contextmenu', (e) => {
             latlng = e.latlng;
-            let menuId = menu.show(e.containerPoint.x, e.containerPoint.y);
+            let menuId = rootMenu.show();
             this.marker.menuId = menuId;
             this.marker.setLatLng(latlng);
+
         });
 
-        // Прослушиваем пользовательское событие contextMenuClosed
-        this.mapContainer.addEventListener('contextMenuClosed', (e) => {
-            if (this.marker.menuId === e.detail.menuId) {
-                this.marker.setLatLng([0, 0]);
-            }
+        // Прослушиваем пользовательское событие allMenusClosed
+        this.mapContainer.addEventListener('allMenusClosed', (e) => {
+            this.marker.setLatLng([0, 0]);
         });
-    }
-
-    copyCoords(latlng) {
-        let coords = `${latlng.lat}, ${latlng.lng}`;
-        navigator.clipboard.writeText(coords);
     }
 
     setAttribution() {
@@ -214,17 +294,17 @@ class Map {
     isRussianLang() {
         return this.currentLayer.options.lang === 'ru';
     }
-    
+
     isLocalLang() {
         return this.currentLayer.options.lang === 'local';
     }
-    
+
     switchToRussian() {
         let russianLayer = this._getTileLayer('ru');
         this.map.removeLayer(this.currentLayer);
         this.currentLayer = russianLayer.addTo(this.map);
     }
-    
+
     switchToLocal() {
         let localLayer = this._getTileLayer('local');
         this.map.removeLayer(this.currentLayer);
