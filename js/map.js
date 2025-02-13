@@ -2,17 +2,20 @@ class Map {
     constructor(page, mapContainer) {
         this.page = page;
         this.mapContainer = mapContainer;
+        this.marker = L.marker([0, 0]);
     }
 
     _getTileLayer(language) {
         let tileUrl = language === 'ru' ? 'http://192.168.2.36:8080/tile/{z}/{x}/{y}.png' : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-        return L.tileLayer(tileUrl, {
+        let tileLayer = L.tileLayer(tileUrl, {
             /* Нелогичность leaflet,
             при котором без указания этого параметра тайлы 19-го зума не загружаются,
             несмотря на то, что в L.map() указано maxZoom: 19
             В документации указано, что по умолчанию значение MaxZoom 18 в L.tileLayer */
-            maxZoom: 19
+            maxZoom: 19,
+            lang: language
         });
+        return tileLayer;
     }
 
     initMap() {
@@ -24,8 +27,8 @@ class Map {
 
         let urlParams = new URLSearchParams(window.location.search);
         let lat = urlParams.get('lat');
-        let lon = urlParams.get('lon');
-        let zoom = urlParams.get('zoom');
+        let lon = urlParams.get('lng');
+        let zoom = urlParams.get('z');
 
         let initialPosition = lat && lon ? { lat: parseFloat(lat), lng: parseFloat(lon) } : this.getSavedPosition();
         let initialZoom = zoom ? parseInt(zoom) : this.getSavedZoom();
@@ -39,8 +42,10 @@ class Map {
             contextmenuItems: []
         }).setView(initialPosition, initialZoom);
 
+        this.marker.addTo(this.map);
+
         if (lat && lon) {
-            L.marker([parseFloat(lat), parseFloat(lon)]).addTo(this.map);
+            this.marker.setLatLng([parseFloat(lat), parseFloat(lon)]);
         }
 
         this.map.on('moveend', () => {
@@ -48,120 +53,142 @@ class Map {
             this.savePosition(center.lat, center.lng);
         });
 
-        let language = this.getSavedLanguage();
+        let language = this.page.getSavedLanguage();
         this.currentLayer = this._getTileLayer(language).addTo(this.map);
     }
 
+    /*async getThatSiteLink() {
+        let longUrl = window.location.origin + "?lat=" + this.map.getCenter().lat + "&lon=" + this.map.getCenter().lng + "&zoom=" + this.map.getZoom();
+        
+        try {
+            let shortUrl = await Utils.shortenUrl(longUrl); // Используем await для получения результата
+            return shortUrl; // Возвращаем короткую ссылку
+        } catch (error) {
+            return longUrl; // Возвращаем длинную ссылку, если произошла ошибка
+        }
+    }*/
+
     getThatSiteLink() {
-        return window.location.href + "?lat=" + this.map.getCenter().lat + "&lon=" + this.map.getCenter().lng + "&zoom=" + this.map.getZoom();
+        let longUrl = window.location.origin + "?lat=" + this.map.getCenter().lat + "&lng=" + this.map.getCenter().lng + "&z=" + this.map.getZoom();
+        return longUrl;
     }
 
-    getOsmLink(lat, lon){
+    getOrganicMapsLink(lat, lon) {
+        return `https://organicmaps.app/map?lat=${lat}&lon=${lon}&zoom=15`;
+    }
+
+
+    getOsmLink(lat, lon) {
         return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=15/${lat}/${lon}`;
     }
 
-    getYandexLink(lat, lon){
+    getYandexLink(lat, lon) {
         return `https://yandex.ru/maps/?ll=${lon}%2C${lat}&mode=whatshere&whatshere%5Bpoint%5D=${lon}%2C${lat}&whatshere%5Bzoom%5D=15&z=15`;
     }
 
-    getGoogleLink(lat, lon){
+    getGoogleLink(lat, lon) {
         return `https://www.google.com/maps/place/${lat},${lon}/@${lat},${lon},15z`;
     }
 
     addContextMenu() {
-        let contextMarker = L.marker([0, 0]).addTo(this.map);
+        let latlng = { lat: 0, lng: 0 };
+
+        // Создаем контекстное меню
+        let menu = new ContextMenu([
+            {
+                label: 'Скопировать координаты',
+                icon: 'bx bx-current-location',
+                action: () => {
+                    this.copyCoords(latlng);
+                    this.page.bubble('Координаты скопированы');
+                }
+            },
+            {
+                label: 'Открыть в другой карте...',
+                icon: 'bx bx-window-open',
+                submenu: [
+                    {
+                        label: 'Google',
+                        icon: "bx bxl-google",
+                        action: () => {
+                            window.open(this.getGoogleLink(latlng.lat, latlng.lng));
+                        }
+                    },
+                    {
+                        label: "Organic Maps",
+                        icon: 'bx bx-globe',
+                        action: () => {
+                            window.open(this.getOrganicMapsLink(latlng.lat, latlng.lng));
+                        }
+                    },
+                    {
+                        label: 'OpenStreetMap',
+                        icon: 'bx bx-globe',
+                        action: () => {
+                            console.log(`b: ${latlng.lat}, ${latlng.lng}`);
+                            window.open(this.getOsmLink(latlng.lat, latlng.lng));
+                        }
+                    },
+                    {
+                        label: 'Яндекс',
+                        icon: 'bx bxs-map-alt',
+                        action: () => {
+                            window.open(this.getYandexLink(latlng.lat, latlng.lng));
+                        }
+                    }
+                ]
+            },
+            {
+                label: 'Поделиться ссылкой на...',
+                icon: 'bx bxs-share',
+                submenu: [
+                    {
+                        label: 'Google',
+                        icon: "bx bxl-google",
+                        action: () => {
+                            navigator.clipboard.writeText(this.getGoogleLink(latlng.lat, latlng.lng));
+                            this.page.bubble('Ссылка скопирована');
+                        }
+                    },
+                    {
+                        label: "Organic Maps",
+                        icon: 'bx bx-globe',
+                        action: () => {
+                            window.open(this.getOrganicMapsLink(latlng.lat, latlng.lng));
+                        }
+                    },
+                    {
+                        label: 'OpenStreetMap',
+                        icon: 'bx bx-globe',
+                        action: () => {
+                            navigator.clipboard.writeText(this.getOsmLink(latlng.lat, latlng.lng));
+                            this.page.bubble('Ссылка скопирована');
+                        }
+                    },
+                    {
+                        label: 'Яндекс',
+                        icon: 'bx bxs-map-alt',
+                        action: () => {
+                            navigator.clipboard.writeText(this.getYandexLink(latlng.lat, latlng.lng));
+                            this.page.bubble('Ссылка скопирована');
+                        }
+                    }
+                ]
+            }
+        ], this.mapContainer);
 
         this.map.on('contextmenu', (e) => {
-            contextMarker.setLatLng(e.latlng);
-            console.log(`a: ${e.latlng.lat}, ${e.latlng.lng}`);
+            latlng = e.latlng;
+            let menuId = menu.show(e.containerPoint.x, e.containerPoint.y);
+            this.marker.menuId = menuId;
+            this.marker.setLatLng(latlng);
+        });
 
-            let latlng = e.latlng; // Сохраняем координаты в переменной
-
-            // Нужно решить проблему того, что работают два контекстного меню независимо друг от друга
-            $.contextMenu({
-                selector: '.mapContainer',
-                items: {
-                    "copyCoords": {
-                        name: "Скопировать координаты",
-                        icon: "fa-regular fa-location-arrow",
-                        callback: () => {
-                            this.copyCoords(latlng);
-                            this.page.bubble("Координаты скопированы");
-                        }
-                    },
-                    "openIn": {
-                        name: "Открыть в...",
-                        icon: "fa-regular fa-arrow-up-right-from-square",
-                        items: {
-                            "openOSM": {
-                                name: "OpenStreetMap",
-                                icon: "fa-regular fa-globe",
-                                callback: () => {
-                                    console.log(`b: ${latlng.lat}, ${latlng.lng}`);
-                                    window.open(this.getOsmLink(latlng.lat, latlng.lng));
-                                }
-                            },
-                            "openYandex": {
-                                name: "Яндекс",
-                                icon: "fa-brands fa-yandex",
-                                callback: () => {
-                                    window.open(this.getYandexLink(latlng.lat, latlng.lng));
-                                }
-                            },
-                            "openGoogle": {
-                                name: "Google",
-                                icon: "fa-brands fa-google",
-                                callback: () => {
-                                    window.open(this.getGoogleLink(latlng.lat, latlng.lng));
-                                }
-                            }
-                        }
-                    },
-                    "shareLink": {
-                        name: "Поделиться ссылкой на...",
-                        icon: "fa-regular fa-share",
-                        items: {
-                            "thatSite": {
-                                name: "Этот сайт",
-                                icon: "fa-regular fa-link",
-                                callback: () => {
-                                    navigator.clipboard.writeText(this.getThatSiteLink());
-                                    this.page.bubble("Ссылка скопирована");
-                                }
-                            },
-                            "shareOSM": {
-                                name: "OpenStreetMap",
-                                icon: "fa-regular fa-globe",
-                                callback: () => {
-                                    navigator.clipboard.writeText(this.getOsmLink(latlng.lat, latlng.lng));
-                                    this.page.bubble("Ссылка скопирована");
-                                }
-                            },
-                            "shareYandex": {
-                                name: "Яндекс",
-                                icon: "fa-brands fa-yandex",
-                                callback: () => {
-                                    navigator.clipboard.writeText(this.getYandexLink(latlng.lat, latlng.lng));
-                                    this.page.bubble("Ссылка скопирована");
-                                }
-                            },
-                            "shareGoogle": {
-                                name: "Google",
-                                icon: "fa-brands fa-google",
-                                callback: () => {
-                                    navigator.clipboard.writeText(this.getGoogleLink(latlng.lat, latlng.lng));
-                                    this.page.bubble("Ссылка скопирована");
-                                }
-                            }
-                        }
-                    }
-                },
-                events: {
-                    hide: () => {
-                        contextMarker.setLatLng([0, 0]);
-                    }
-                }
-            });
+        // Прослушиваем пользовательское событие contextMenuClosed
+        this.mapContainer.addEventListener('contextMenuClosed', (e) => {
+            if (this.marker.menuId === e.detail.menuId) {
+                this.marker.setLatLng([0, 0]);
+            }
         });
     }
 
@@ -184,74 +211,24 @@ class Map {
         });
     }
 
-    addLanguageControl() {
-        let div = document.createElement('div');
-        div.className = 'switcher-control';
-        div.style.left = '10px';
-        div.style.top = '10px';
-
-        let select = document.createElement('select');
-        select.id = 'languageSwitcher';
-
-        let optionRu = document.createElement('option');
-        optionRu.value = 'ru';
-        optionRu.textContent = 'Русский';
-        select.appendChild(optionRu);
-
-        let optionLocal = document.createElement('option');
-        optionLocal.value = 'local';
-        optionLocal.textContent = 'Местный';
-        select.appendChild(optionLocal);
-
-        div.appendChild(select);
-
-        // Добавляем элемент управления на карту
-        this.mapContainer.appendChild(div);
-
-        select.value = this.getSavedLanguage();
-
-        select.addEventListener('change', (e) => {
-            let language = e.target.value;
-            this.map.removeLayer(this.currentLayer);
-            this.currentLayer = this._getTileLayer(language);
-            this.currentLayer.addTo(this.map);
-            this.saveLanguage(language);
-        });
+    isRussianLang() {
+        return this.currentLayer.options.lang === 'ru';
     }
-
-    addThemeControl() {
-        let div = document.createElement('div');
-        div.className = 'switcher-control';
-        div.style.left = '10px';
-        div.style.bottom = '10px';
-
-        let select = document.createElement('select');
-        select.id = 'themeSwitcher';
-
-        let optionLight = document.createElement('option');
-        optionLight.value = 'light';
-        optionLight.textContent = 'Светлая';
-        select.appendChild(optionLight);
-
-        let optionDark = document.createElement('option');
-        optionDark.value = 'dark';
-        optionDark.textContent = 'Тёмная';
-        select.appendChild(optionDark);
-
-        div.appendChild(select);
-
-        // Добавляем элемент управления на карту
-        this.mapContainer.appendChild(div);
-
-        select.value = this.getSavedTheme();
-
-        select.addEventListener('change', (e) => {
-            let theme = e.target.value;
-            document.body.setAttribute('theme', theme);
-            this.saveTheme(theme);
-        });
-
-        document.body.setAttribute('theme', this.getSavedTheme());
+    
+    isLocalLang() {
+        return this.currentLayer.options.lang === 'local';
+    }
+    
+    switchToRussian() {
+        let russianLayer = this._getTileLayer('ru');
+        this.map.removeLayer(this.currentLayer);
+        this.currentLayer = russianLayer.addTo(this.map);
+    }
+    
+    switchToLocal() {
+        let localLayer = this._getTileLayer('local');
+        this.map.removeLayer(this.currentLayer);
+        this.currentLayer = localLayer.addTo(this.map);
     }
 
     addCustomZoomControl() {
@@ -320,14 +297,6 @@ class Map {
         localStorage.setItem('mapPosition', JSON.stringify(position));
     }
 
-    saveTheme(theme) {
-        localStorage.setItem('mapTheme', theme);
-    }
-
-    saveLanguage(language) {
-        localStorage.setItem('mapLanguage', language);
-    }
-
     getSavedZoom() {
         return localStorage.getItem('mapZoom') || 8;
     }
@@ -335,13 +304,5 @@ class Map {
     getSavedPosition() {
         let position = localStorage.getItem('mapPosition');
         return position ? JSON.parse(position) : { lat: 42.5, lng: 19.3 };
-    }
-
-    getSavedTheme() {
-        return localStorage.getItem('mapTheme') || 'light';
-    }
-
-    getSavedLanguage() {
-        return localStorage.getItem('mapLanguage') || 'ru';
     }
 }

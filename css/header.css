@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap');
+
+#header {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+    z-index: 100;
+    order: 0;
+}
+
+#logo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+#actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto; /* Это привяжет элемент справа */
+}
+
+#siteName {
+    font-family: 'Roboto', sans-serif; /* Added this line */
+    font-weight: bold;
+}
+
+.action {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    display: inline-block;
+    border-radius: 25px;
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    text-decoration: none;
+    vertical-align: middle;
+}
+
+.action:hover {
+    cursor: pointer;
+}
+
+body[theme="light"] .action{
+    border: 1px solid #449f33;
+    color: #449f33;
+}
+
+body[theme="dark"] .action{
+    border: 1px solid #bc862e;
+    color: #bc862e;
+}
+
+body[theme="light"] .action:hover {
+    background-color: #449f33;
+    color: white;
+}
+
+body[theme="dark"] .action:hover {
+    background-color: #bc862e;
+    color: white;
+}
+
+body[theme="light"] #header {
+    background: white;
+    box-shadow: 0 3px 10px 0 #00000030;
+    color: black;
+}
+
+body[theme="dark"] #header {
+    background: #333;
+    color: white; /* Светло-синий текст */
+    box-shadow: 0 3px 10px 0 #00000030;
+}

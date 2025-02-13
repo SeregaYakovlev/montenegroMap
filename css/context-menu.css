@@ -1,0 +1,126 @@
+/* Стили для светлой темы */
+body[theme="light"] .context-menu {
+    background: white;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 1);
+    color: black;
+}
+
+body[theme="light"] .context-menu-item {
+    border-bottom: 1px solid #ddd; /* Добавляем разделитель */
+}
+
+body[theme="light"] .context-menu-item:last-child {
+    border-bottom: none; /* Убираем разделитель у последнего элемента */
+}
+
+body[theme="light"] .context-menu-item:hover {
+    background: #eee;
+}
+
+/* Стили для тёмной темы */
+body[theme="dark"] .context-menu {
+    background: #333;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 1);
+    color: white;
+}
+
+body[theme="dark"] .context-menu-item {
+    border-bottom: 1px solid #555; /* Добавляем разделитель */
+}
+
+body[theme="dark"] .context-menu-item:last-child {
+    border-bottom: none; /* Убираем разделитель у последнего элемента */
+}
+
+body[theme="dark"] .context-menu-item:hover {
+    background: #555;
+}
+
+/* Общие стили для контекстного меню */
+.context-menu {
+    position: absolute;
+    padding: 5px;
+    min-width: 150px;
+    z-index: 1000;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.context-menu-item {
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    position: relative; /* Для позиционирования стрелки */
+}
+
+.has-submenu {
+    position: relative;
+}
+
+/* Увеличиваем отступ справа, чтобы стрелочка не налегала на текст */
+.context-menu-item.has-submenu {
+    padding-right: 20px;
+}
+
+/* Когда подменю уходит влево, меняем паддинги */
+.context-menu-item:has(.submenu[data-space-right="false"]) {
+    padding-right: 10px; /* Убираем правый отступ */
+    padding-left: 20px;  /* Добавляем левый отступ под стрелку */
+}
+
+/* Если подменю уходит влево, стрелка тоже уходит влево */
+.context-menu-item:has(.submenu[data-space-right="false"])::after {
+    transform: translateY(-50%) rotate(180deg);
+    right: auto;
+    left: 5px; /* Двигаем стрелку левее, чтобы не съедать текст */
+}
+
+/* По умолчанию стрелка вправо */
+.context-menu-item.has-submenu::after {
+    content: '▶';
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.submenu {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    padding: 5px;
+    min-width: 150px;
+    display: none;
+}
+
+/* Применение подменю в зависимости от наличия места */
+
+/* Если не хватает места снизу, подменю разворачивается вверх */
+.context-menu-item .submenu[data-space-below="false"] {
+    top: auto;
+    bottom: 0; /* Разворачиваем подменю вверх */
+    left: 100%; /* Подменю вправо должно быть на одном уровне с родительским элементом */
+}
+
+/* Если не хватает места справа, подменю разворачивается влево */
+.context-menu-item .submenu[data-space-right="false"] {
+    left: auto;
+    right: 100%; /* Разворачиваем подменю влево */
+    top: 0; /* Подменю влево должно быть на одном уровне с родительским элементом */
+}
+
+/* Если не хватает места и снизу, и справа одновременно */
+.context-menu-item .submenu[data-space-below="false"][data-space-right="false"] {
+    top: auto;
+    bottom: 0;  /* Разворачиваем подменю вверх */
+    left: auto;
+    right: 100%; /* Разворачиваем подменю влево */
+}
+
+/* Правило для подменю по умолчанию (если места достаточно) */
+.context-menu-item .submenu {
+    top: 0;
+    left: 100%; /* Подменю по умолчанию раскрывается вправо */
+}
+
