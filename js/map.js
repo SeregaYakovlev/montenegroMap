@@ -18,21 +18,26 @@ class Map {
         return tileLayer;
     }
 
+    hasCoordinatesInURL() {
+        return /^#-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(window.location.hash);
+    }
+    
     initMap() {
         let map0 = document.createElement("div");
         map0.classList.add("map");
         this.map0 = map0;
-
         this.mapContainer.appendChild(map0);
-
-        let urlParams = new URLSearchParams(window.location.search);
-        let lat = urlParams.get('lat');
-        let lon = urlParams.get('lng');
-        let zoom = urlParams.get('z');
-
-        let initialPosition = lat && lon ? { lat: parseFloat(lat), lng: parseFloat(lon) } : this.getSavedPosition();
-        let initialZoom = zoom ? parseInt(zoom) : this.getSavedZoom();
-
+    
+        let initialPosition;
+        if (this.hasCoordinatesInURL()) {
+            let [lat, lon] = window.location.hash.slice(1).split(',').map(parseFloat);
+            initialPosition = { lat, lng: lon };
+        } else {
+            initialPosition = this.getSavedPosition();
+        }
+    
+        let initialZoom = this.hasCoordinatesInURL() ? 13 : this.getSavedZoom();
+    
         this.map = L.map(map0, {
             minZoom: 8,
             maxZoom: 19,
@@ -41,36 +46,24 @@ class Map {
             contextmenu: true,
             contextmenuItems: []
         }).setView(initialPosition, initialZoom);
-
+    
         this.marker.addTo(this.map);
-
-        if (lat && lon) {
-            this.marker.setLatLng([parseFloat(lat), parseFloat(lon)]);
+    
+        if (this.hasCoordinatesInURL()) {
+            this.marker.setLatLng(initialPosition);
         }
-
+    
         this.map.on('moveend', () => {
             let center = this.map.getCenter();
             this.savePosition(center.lat, center.lng);
         });
-
+    
         let language = this.page.getSavedLanguage();
         this.currentLayer = this._getTileLayer(language).addTo(this.map);
     }
-
-    /*async getThatSiteLink() {
-        let longUrl = window.location.origin + "?lat=" + this.map.getCenter().lat + "&lon=" + this.map.getCenter().lng + "&zoom=" + this.map.getZoom();
-        
-        try {
-            let shortUrl = await Utils.shortenUrl(longUrl); // Используем await для получения результата
-            return shortUrl; // Возвращаем короткую ссылку
-        } catch (error) {
-            return longUrl; // Возвращаем длинную ссылку, если произошла ошибка
-        }
-    }*/
-
+    
     getThatSiteLink(lat, lon) {
-        let url = window.location.origin + "?lat=" + lat + "&lng=" + lon + "&z=13";
-        return url;
+        return `${window.location.origin}/#${lat.toFixed(6)},${lon.toFixed(6)}`;
     }
 
     getOsmLink(lat, lon) {
@@ -182,8 +175,7 @@ class Map {
             // Парсим координаты
             const coords = this.extractCoordinates(text);
 
-            // Добавляем метку на карту
-            L.marker([coords.lat, coords.lng]).addTo(this.map);
+            this.marker.setLatLng([coords.lat, coords.lng]);
 
             // Центрируем карту на метке
             this.map.setView([coords.lat, coords.lng], 13);
@@ -194,7 +186,7 @@ class Map {
         coordsCopy.setLabel('Скопировать координаты');
         coordsCopy.setAction(() => {
             // Здесь ты можешь вызвать функцию копирования
-            let coords = `${latlng.lat}, ${latlng.lng}`;
+            let coords = `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`;
             this.copyToBufferAndMessage(coords);
         });
 
