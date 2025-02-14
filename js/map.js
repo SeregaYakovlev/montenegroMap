@@ -21,13 +21,13 @@ class Map {
     hasCoordinatesInURL() {
         return /^#-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(window.location.hash);
     }
-    
+
     initMap() {
         let map0 = document.createElement("div");
         map0.classList.add("map");
         this.map0 = map0;
         this.mapContainer.appendChild(map0);
-    
+
         let initialPosition;
         if (this.hasCoordinatesInURL()) {
             let [lat, lon] = window.location.hash.slice(1).split(',').map(parseFloat);
@@ -35,9 +35,9 @@ class Map {
         } else {
             initialPosition = this.getSavedPosition();
         }
-    
+
         let initialZoom = this.hasCoordinatesInURL() ? 13 : this.getSavedZoom();
-    
+
         this.map = L.map(map0, {
             minZoom: 8,
             maxZoom: 19,
@@ -46,22 +46,22 @@ class Map {
             contextmenu: true,
             contextmenuItems: []
         }).setView(initialPosition, initialZoom);
-    
+
         this.marker.addTo(this.map);
-    
+
         if (this.hasCoordinatesInURL()) {
             this.marker.setLatLng(initialPosition);
         }
-    
+
         this.map.on('moveend', () => {
             let center = this.map.getCenter();
             this.savePosition(center.lat, center.lng);
         });
-    
+
         let language = this.page.getSavedLanguage();
         this.currentLayer = this._getTileLayer(language).addTo(this.map);
     }
-    
+
     getThatSiteLink(lat, lon) {
         return `${window.location.origin}/#${lat.toFixed(6)},${lon.toFixed(6)}`;
     }
@@ -87,76 +87,6 @@ class Map {
         }
     }
 
-    async readBuffer() {
-        try {
-            // Читаем буфер обмена
-            const text = await navigator.clipboard.readText();
-            return text;
-        } catch (e) {
-            alert("Ошибка доступа к буферу обмена");
-            throw e;
-        }
-    }
-
-    extractCoordinates(text) {
-        try {
-
-            let match;
-
-            // Проверка на наличие координат через запятую
-            match = text.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
-            if (match) {
-                const lat = parseFloat(match[1]);
-                const lng = parseFloat(match[2]);
-                // Проверяем, что координаты - это числа
-                if (!isNaN(lat) && !isNaN(lng)) {
-                    return { lat, lng };
-                }
-            }
-
-            // Проверка на Google Maps
-            if (text.includes("google")) {
-                match = text.match(/(?:.*@)?(-?\d+\.\d+),(-?\d+\.\d+)/);
-                if (match) {
-                    const lat = parseFloat(match[1]);
-                    const lng = parseFloat(match[2]);
-                    if (!isNaN(lat) && !isNaN(lng)) {
-                        return { lat, lng };
-                    }
-                }
-            }
-
-            // Проверка на Яндекс.Карты
-            if (text.includes("yandex")) {
-                match = text.match(/.*[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
-                if (match) {
-                    const lat = parseFloat(match[2]);
-                    const lng = parseFloat(match[1]);
-                    if (!isNaN(lat) && !isNaN(lng)) {
-                        return { lat, lng };
-                    }
-                }
-            }
-
-            // Проверка на OpenStreetMap
-            if (text.includes("openstreetmap")) {
-                match = text.match(/.*[?&]mlat=(-?\d+\.\d+).*mlon=(-?\d+\.\d+)/);
-                if (match) {
-                    const lat = parseFloat(match[1]);
-                    const lng = parseFloat(match[2]);
-                    if (!isNaN(lat) && !isNaN(lng)) {
-                        return { lat, lng };
-                    }
-                }
-            }
-        } catch (e) {
-            alert(`Не удалось определить координаты из буфера: ${text}`);
-            throw e;
-        }
-    }
-
-
-
     addContextMenu() {
         let latlng = { lat: 0, lng: 0 };
 
@@ -164,60 +94,41 @@ class Map {
         let anotherMapsMenu = new Menu(this.page, this.mapContainer);
         let linkSharingMenu = new Menu(this.page, this.mapContainer);
 
-
-        let parseCoords = rootMenu.getNewItem();
-        parseCoords.setIcon("bx bx-current-location");
-        parseCoords.setLabel("Добавить метку из буфера");
-        parseCoords.setAction(async () => {
-            // Читаем буфер обмена
-            const text = await this.readBuffer();
-
-            // Парсим координаты
-            const coords = this.extractCoordinates(text);
-
-            this.marker.setLatLng([coords.lat, coords.lng]);
-
-            // Центрируем карту на метке
-            this.map.setView([coords.lat, coords.lng], 13);
-        })
-
         let coordsCopy = rootMenu.getNewItem();
-        coordsCopy.setIcon('bx bx-current-location');
+        coordsCopy.setIcon('bx bx-copy');  // Иконка копирования
         coordsCopy.setLabel('Скопировать координаты');
         coordsCopy.setAction(() => {
-            // Здесь ты можешь вызвать функцию копирования
             let coords = `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`;
             this.copyToBufferAndMessage(coords);
         });
 
-
         let openInAnotherMap = rootMenu.getNewItem();
-        openInAnotherMap.setIcon('bx bx-window-open');
+        openInAnotherMap.setIcon('bx bx-map-alt');  // Иконка карты
         openInAnotherMap.setLabel('Открыть в другом месте...');
         openInAnotherMap.setSubmenu(anotherMapsMenu);
 
         let shareLink = rootMenu.getNewItem();
-        shareLink.setIcon("bx bxl-google");
+        shareLink.setIcon("bx bx-share-alt");  // Иконка общего доступа
         shareLink.setLabel("Поделиться ссылкой...");
         shareLink.setSubmenu(linkSharingMenu);
 
         {
             let googleItem = anotherMapsMenu.getNewItem();
-            googleItem.setIcon("bx bxl-google");
+            googleItem.setIcon("google-icon");
             googleItem.setLabel("Google");
             googleItem.setAction(() => {
                 window.open(this.getGoogleLink(latlng.lat, latlng.lng));
             });
 
             let osmItem = anotherMapsMenu.getNewItem();
-            osmItem.setIcon('bx bx-globe');
+            osmItem.setIcon('osm-icon');
             osmItem.setLabel("OpenStreetMap");
             osmItem.setAction(() => {
                 window.open(this.getOsmLink(latlng.lat, latlng.lng));
             });
 
             let yandexItem = anotherMapsMenu.getNewItem();
-            yandexItem.setIcon('bx bxs-map-alt');
+            yandexItem.setIcon('yandex-icon');
             yandexItem.setLabel("Yandex");
             yandexItem.setAction(() => {
                 window.open(this.getYandexLink(latlng.lat, latlng.lng));
@@ -225,35 +136,35 @@ class Map {
         }
 
         {
-
             let thatSiteItem = linkSharingMenu.getNewItem();
-            thatSiteItem.setIcon("bx bxl-google");
+            thatSiteItem.setIcon("bx bx-link-alt");  // Иконка ссылки
             thatSiteItem.setLabel("Этот сайт");
             thatSiteItem.setAction(() => {
                 this.copyToBufferAndMessage(this.getThatSiteLink(latlng.lat, latlng.lng));
             });
 
             let googleItem = linkSharingMenu.getNewItem();
-            googleItem.setIcon("bx bxl-google");
+            googleItem.setIcon("google-icon");
             googleItem.setLabel("Google");
             googleItem.setAction(() => {
                 this.copyToBufferAndMessage(this.getGoogleLink(latlng.lat, latlng.lng));
             });
 
             let osmItem = linkSharingMenu.getNewItem();
-            osmItem.setIcon('bx bx-globe');
+            osmItem.setIcon('osm-icon');
             osmItem.setLabel("OpenStreetMap");
             osmItem.setAction(() => {
                 this.copyToBufferAndMessage(this.getOsmLink(latlng.lat, latlng.lng));
             });
 
             let yandexItem = linkSharingMenu.getNewItem();
-            yandexItem.setIcon('bx bxs-map-alt');
+            yandexItem.setIcon('yandex-icon');
             yandexItem.setLabel("Yandex");
             yandexItem.setAction(() => {
                 this.copyToBufferAndMessage(this.getYandexLink(latlng.lat, latlng.lng));
             });
         }
+
 
         this.map.on('contextmenu', (e) => {
             latlng = e.latlng;

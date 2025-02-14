@@ -29,7 +29,8 @@ class Item {
         // Если есть иконка, добавляем её
         if (this.icon) {
             let icon = document.createElement('i');
-            icon.className = this.icon;
+            icon.classList.add("icon");
+            icon.classList.add(...this.icon.split(' '));
             menuItem.appendChild(icon);
         }
 
