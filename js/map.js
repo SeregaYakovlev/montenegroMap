@@ -6,7 +6,7 @@ class Map {
     }
 
     _getTileLayer(language) {
-        let tileUrl = language === 'ru' ? 'http://192.168.2.36:8080/tile/{z}/{x}/{y}.png' : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+        let tileUrl = language === 'ru' ? 'https://tiles.montemap.ru/tile/{z}/{x}/{y}.png' : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
         let tileLayer = L.tileLayer(tileUrl, {
             /* Нелогичность leaflet,
             при котором без указания этого параметра тайлы 19-го зума не загружаются,
