@@ -8,6 +8,7 @@
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
     width: max-content;
+    overflow: hidden;
 }
 
 /* Элементы меню */
