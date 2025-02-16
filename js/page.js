@@ -38,7 +38,7 @@ class Page {
         return localStorage.getItem('language') || 'ru';
     }
 
-    bubble(message){
+    bubble(message, ms = 2000){
         let bubble = document.createElement('div');
         bubble.className = 'notification-bubble';
         bubble.textContent = message;
@@ -46,7 +46,7 @@ class Page {
 
         setTimeout(() => {
             bubble.remove();
-        }, 1000);
+        }, ms);
     }
 
     _applySavedTheme(){

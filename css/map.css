@@ -7,3 +7,8 @@
 body[theme="dark"] .map {
     filter: invert(100%) hue-rotate(180deg); /* Инвертировать цвета карты */
 }
+
+/* Исключаем инвертирование цветов для маркеров */
+body[theme="dark"] .leaflet-marker-icon {
+    filter: invert(100%) hue-rotate(180deg); /* Восстановление цвета маркера */
+}
