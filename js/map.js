@@ -14,6 +14,10 @@ class Map {
         this.bufferMarker.setColor("#2A81CB", "#3274A3");
     }
 
+    getZoom(){
+        return this.map.getZoom();
+    }
+
     getBufferMarker(){
         return this.bufferMarker;
     }
