@@ -4,11 +4,27 @@
     z-index: 0;
 }
 
-body[theme="dark"] .map {
-    filter: invert(100%) hue-rotate(180deg); /* Инвертировать цвета карты */
+.map .leaflet-control-attribution {
+    border-top-left-radius: 6px;
 }
 
-/* Исключаем инвертирование цветов для маркеров */
-body[theme="dark"] .leaflet-marker-icon {
-    filter: invert(100%) hue-rotate(180deg); /* Восстановление цвета маркера */
+/*body[theme="dark"] .map {
+    filter: invert(100%) hue-rotate(180deg);
+}*/
+
+body[theme="dark"] .map.leaflet-container {
+    /* Получен с помощью filter: invert(100%) hue-rotate(180deg); от #ddd */
+    background: #222222;
+}
+
+body[theme="dark"] .map .leaflet-tile-pane {
+    filter: invert(100%) hue-rotate(180deg); /* Инвертировать цвета тайлов */
+}
+
+body[theme="dark"] .map .leaflet-shadow-pane {
+    filter: invert(100%) hue-rotate(180deg);
+}
+
+body[theme="dark"] .map .leaflet-control-attribution {
+    filter: invert(100%) hue-rotate(180deg);
 }
