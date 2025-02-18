@@ -110,15 +110,15 @@ class MarkerMenu {
             };
 
             if (coords.correctedCoords.length === 0) {
-                return this.messageOutsideMontenegro(text, coords.initialCoords[0].lat, coords.initialCoords[0].lng);
+                return this.page.messageOutsideMontenegro(text, coords.initialCoords[0].lat, coords.initialCoords[0].lng);
             }
 
             if (coords.correctedCoords.length > 0) {
                 this.marker.getMap().getBufferMarker().setLatLng(coords.correctedCoords[0]);
                 this.page.bubble("Метка из буфера успешно добавлена!", 3000);
 
-                // Центрируем карту на новых координатах с зумом 13
-                this.marker.getMap().setView(coords.correctedCoords[0], 13);
+                // Центрируем карту на новых координатах
+                this.marker.getMap().setView(coords.correctedCoords[0]);
             }
         });
 
@@ -222,7 +222,7 @@ class MarkerMenu {
     }
 
     getThisSiteLink(lat, lon) {
-        return `${window.location.origin}/#${lat.toFixed(6)},${lon.toFixed(6)}`;
+        return `${window.location.origin}/?c=${lat.toFixed(6)},${lon.toFixed(6)}`;
     }
 
     getOsmLink(lat, lon, zoom = 13) {
@@ -305,14 +305,6 @@ class MarkerMenu {
             alert("Не удалось прочитать буфер обмена: " + error.message);
             throw error;
         }
-    }
-
-    messageOutsideMontenegro(textData, lat, lng) {
-        return alert(`Ссылка за пределами Черногории?\n
-            Данные: ${textData}
-            Широта: ${lat}
-            Долгота: ${lng}
-            `);
     }
 
     close(){

@@ -2,9 +2,15 @@ class LanguageSwitcher {
     constructor(page, map) {
         this.page = page;
         this.map = map;
-        this.languageSwitcher = document.querySelector('#languageSwitcher');
+        this.languageSwitcher = document.createElement("div");
+        this.languageSwitcher.id = "languageSwitcher";
+        this.languageSwitcher.className = "action";
         this.languageSwitcher.addEventListener('click', () => this.switchLanguage());
         this.updateText();
+    }
+
+    addToPage(){
+        this.page.addAction(this.languageSwitcher);
     }
 
     switchLanguage() {

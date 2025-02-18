@@ -39,14 +39,22 @@ body[theme="dark"] .leaflet-control-zoom-custom button {
 }
 
 body[theme="light"] .leaflet-control-zoom-custom button:hover:not(.disabled) {
-    background: #f0f0f0;
+    background: #e0e0e0;
 }
 
 body[theme="dark"] .leaflet-control-zoom-custom button:hover:not(.disabled) {
-    background: #5a5a5a;
+    background: #6a6a6a;
 }
 
 body[theme] .leaflet-control-zoom-custom button.disabled {
     cursor: not-allowed;
     color: grey;
+}
+
+body[theme="light"] .leaflet-control-zoom-custom button:active:not(.disabled) {
+    background: #d0d0d0;
+}
+
+body[theme="dark"] .leaflet-control-zoom-custom button:active:not(.disabled) {
+    background: #7a7a7a;
 }

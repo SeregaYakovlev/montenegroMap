@@ -70,6 +70,7 @@ class Marker {
 
     setOnClickAction(action){
         this.marker.on('click', (event) => {
+            this.blink();
             // При клике вызываем метод для отображения контекстного меню
             action(event);
         });
@@ -78,6 +79,22 @@ class Marker {
     runAction(action){
         action();
     }
+    
+    blink() {
+        if (!this.marker.options.icon) {
+            return;
+        }
+    
+        const originalIcon = this.marker.options.icon; // Сохраняем текущую иконку
+    
+        // Устанавливаем временный цвет (например, белый)
+        this.setColor("#CB8427", "#98652E");
+    
+        setTimeout(() => {
+            this.marker.setIcon(originalIcon); // Восстанавливаем оригинальную иконку
+        }, 250);
+    }
+    
 
     // Миксируем цвета для светлой и темной версии
     getLighter(color, factor = 0.3) {

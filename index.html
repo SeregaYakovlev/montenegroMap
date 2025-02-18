@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="css/context-menu.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/icons.css">
-    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/b/b0/Openstreetmap_logo.svg" type="image/png">
+    <link rel="icon" href="images/siteLogo/osm_montenegro_logo.svg" type="image/png">
 </head>
 
 <!-- body theme dark нужен,
@@ -24,13 +24,10 @@
     <div id="header">
         <div id="logo">
             <img alt=""
-                src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Openstreetmap_logo.svg" width="30" height="30">
+                src="images/siteLogo/osm_montenegro_logo.svg" width="30" height="30">
             <span id="siteName">Черногория на русском</span>
         </div>
-        <div id="actions">
-            <div id="languageSwitcher" class="action"></div>
-            <div id="themeSwitcher" class="action"></div>
-        </div>
+        <div id="actions"></div>
     </div>
     <div id="content"></div>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -46,20 +43,7 @@
 
     <script>
         let page = new Page();
-
-        let mapContainer = document.getElementById("content");
-
-        let map = new Map(page, mapContainer);
-
-        map.initMap();
-        map.setAttribution();
-        map.setBounds();
-        map.addCustomZoomControl();
-        map.addContextMenu();
-        map.showMarkerFromURL();
-
-        let themeSwitcher = new ThemeSwitcher(page);
-        let languageSwitcher = new LanguageSwitcher(page, map);
+        page.init();
     </script>
 </body>
 

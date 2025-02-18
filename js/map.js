@@ -18,6 +18,10 @@ class Map {
         return this.map.getZoom();
     }
 
+    getSiteLinkMarker(){
+        return this.siteLinkMarker;
+    }
+
     getBufferMarker(){
         return this.bufferMarker;
     }
@@ -36,11 +40,11 @@ class Map {
     }
 
     setView(latlng, zoom){
+        if(!zoom){
+            zoom = this.map.getZoom();
+        }
+        
         this.map.setView(latlng, zoom);
-    }
-
-    hasCoordinatesInURL() {
-        return /^#-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(window.location.hash);
     }
 
     initMap() {
@@ -73,30 +77,6 @@ class Map {
 
         let language = this.page.getSavedLanguage();
         this.currentLayer = this._getTileLayer(language).addTo(this.map);
-    }
-
-    messageOutsideMontenegro(textData, lat, lng) {
-        return alert(`Ссылка за пределами Черногории?\n
-            Данные: ${textData}
-            Широта: ${lat}
-            Долгота: ${lng}
-            `);
-    }
-
-    showMarkerFromURL() {
-        if (this.hasCoordinatesInURL()) {
-            let [lat, lng] = window.location.hash.slice(1).split(',').map(parseFloat);
-
-            if (this.isInMapBounds(lat, lng)) {
-                let positionInUrl = { lat: lat, lng: lng };
-                this.siteLinkMarker.setLatLng(positionInUrl);
-                this.map.setView(positionInUrl, 13);
-            }
-            else {
-                return this.messageOutsideMontenegro(window.location.hash, lat, lng);
-            }
-
-        }
     }
 
     isInMapBounds(lat, lng) {

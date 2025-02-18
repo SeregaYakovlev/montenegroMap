@@ -1,9 +1,15 @@
 class ThemeSwitcher {
     constructor(page) {
         this.page = page;
-        this.themeSwitcher = document.querySelector('#themeSwitcher');
+        this.themeSwitcher = document.createElement("div");
+        this.themeSwitcher.id = "themeSwitcher";
+        this.themeSwitcher.className = "action";
         this.themeSwitcher.addEventListener('click', () => this.toggleTheme());
         this.updateText();
+    }
+
+    addToPage(){
+        this.page.addAction(this.themeSwitcher);
     }
 
     toggleTheme() {
