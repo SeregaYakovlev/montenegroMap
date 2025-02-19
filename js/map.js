@@ -11,7 +11,7 @@ class Map {
         this.siteLinkMarker.setColor("#CB2B3E", "#982E40");
 
         this.bufferMarker = new Marker(this);
-        this.bufferMarker.setColor("#2A81CB", "#3274A3");
+        this.bufferMarker.setColor("#CB8427", "#98652E");
     }
 
     getZoom(){
